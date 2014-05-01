@@ -2,8 +2,11 @@ package labyrinth;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.Iterator;
 
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import labyrinth.Tile.ETileType;
@@ -40,7 +43,7 @@ public class LabyrinthPainter extends JPanel {
 
 			switch (tile.getType()) {
 			case Empty:
-				g.setColor(Color.WHITE);
+				paintEmpty(g, x, y, tile);
 				break;
 			case Wall:
 				paintWall(g, x, y, tile);
@@ -69,6 +72,20 @@ public class LabyrinthPainter extends JPanel {
 	private void paintOutline(Graphics g, int x, int y) {
 		g.setColor(Color.GRAY);
 		g.drawRect(x, y, _tileSize, _tileSize);
+	}
+
+	private void paintEmpty(Graphics g, int x, int y, Tile tile) {
+		if (tile.isStart()) {
+			g.setColor(Color.RED);
+			g.fillOval(x, y, _tileSize, _tileSize);
+		} else if (tile.isPath()) {
+			g.setColor(Color.YELLOW);
+			g.fillOval(x, y, _tileSize, _tileSize);
+
+			g.setColor(Color.BLACK);
+			g.drawString(tile.getNumber() + "", x + (_tileSize / 2), y
+					+ (_tileSize / 2));
+		}
 	}
 
 	private void paintWall(Graphics g, int x, int y, Tile tile) {
@@ -103,4 +120,39 @@ public class LabyrinthPainter extends JPanel {
 		}
 
 	}
+
+	public void start(Point point) {
+		Iterator<Tile> it = _labyrinth.getTiles().iterator();
+		Tile startTile = null;
+		while (it.hasNext()) {
+			Tile tile = it.next();
+
+			if (tile.getType() != Tile.ETileType.Empty) {
+				continue;
+			}
+
+			tile.clearPath();
+
+			int x = tile.getCoordinate().getX() * _tileSize;
+			int y = tile.getCoordinate().getY() * _tileSize;
+
+			Rectangle rect = new Rectangle(x, y, _tileSize, _tileSize);
+
+			if (rect.contains(point)) {
+				tile.setIsStart();
+				startTile = tile;
+			} else {
+				tile.clearStart();
+			}
+		}
+
+		if (startTile != null) {
+			if (!_labyrinth.findPathFrom(startTile)) {
+				JOptionPane.showMessageDialog(this, "Could not find a way :(");
+			}
+		}
+
+		repaint();
+	}
+
 }

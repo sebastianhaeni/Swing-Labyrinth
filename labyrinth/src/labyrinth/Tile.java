@@ -7,8 +7,13 @@ public class Tile {
 		Wall, Empty
 	}
 
+	private static final boolean ALLOW_DIAGONAL = true;
+
 	private ETileType _type;
 	private Coordinate _coordinate;
+	private boolean _isStart;
+	private boolean _isPath;
+	private int _number;
 
 	public Tile(char c, Coordinate coordinate) {
 		_coordinate = coordinate;
@@ -75,4 +80,102 @@ public class Tile {
 		return new Tile(coordinate, ETileType.Empty);
 	}
 
+	public void setIsStart() {
+		_isStart = true;
+	}
+
+	public void clearStart() {
+		_isStart = false;
+	}
+
+	public boolean isStart() {
+		return _isStart;
+	}
+
+	public boolean isPath() {
+		return _isPath;
+	}
+
+	public void setIsPath() {
+		_isPath = true;
+	}
+
+	public boolean isNeighbor(Tile tile) {
+
+		if (tile.getCoordinate().getX() == getCoordinate().getX() - 1
+				&& tile.getCoordinate().getY() == getCoordinate().getY()) {
+			return true;
+		}
+		if (tile.getCoordinate().getX() == getCoordinate().getX() + 1
+				&& tile.getCoordinate().getY() == getCoordinate().getY()) {
+			return true;
+		}
+		if (tile.getCoordinate().getX() == getCoordinate().getX()
+				&& tile.getCoordinate().getY() == getCoordinate().getY() - 1) {
+			return true;
+		}
+		if (tile.getCoordinate().getX() == getCoordinate().getX()
+				&& tile.getCoordinate().getY() == getCoordinate().getY() + 1) {
+			return true;
+		}
+
+		if (!ALLOW_DIAGONAL) {
+			return false;
+		}
+
+		if (tile.getCoordinate().getX() == getCoordinate().getX() - 1
+				&& tile.getCoordinate().getY() == getCoordinate().getY() - 1) {
+			return true;
+		}
+		if (tile.getCoordinate().getX() == getCoordinate().getX() + 1
+				&& tile.getCoordinate().getY() == getCoordinate().getY() + 1) {
+			return true;
+		}
+		if (tile.getCoordinate().getX() == getCoordinate().getX() + 1
+				&& tile.getCoordinate().getY() == getCoordinate().getY() - 1) {
+			return true;
+		}
+		if (tile.getCoordinate().getX() == getCoordinate().getX() - 1
+				&& tile.getCoordinate().getY() == getCoordinate().getY() + 1) {
+			return true;
+		}
+
+		return false;
+	}
+
+	public boolean isExit(int width, int height) {
+		int x = getCoordinate().getX();
+		int y = getCoordinate().getY();
+		return x == 0 || x == width - 1 || y == 0 || y == height - 1;
+	}
+
+	public ArrayList<Tile> getNeighbors(ArrayList<Tile> tiles, ETileType type) {
+		ArrayList<Tile> neighbors = new ArrayList<>();
+
+		for (Tile tile : tiles) {
+
+			if (tile.equals(this) || tile.getType() != type) {
+				continue;
+			}
+
+			if (isNeighbor(tile)) {
+				neighbors.add(tile);
+			}
+
+		}
+
+		return neighbors;
+	}
+
+	public void clearPath() {
+		_isPath = false;
+	}
+
+	public void setNumber(int number) {
+		_number = number;
+	}
+
+	public int getNumber() {
+		return _number;
+	}
 }
