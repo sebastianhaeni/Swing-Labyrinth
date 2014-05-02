@@ -84,7 +84,6 @@ public class Main extends JFrame {
 
 			@Override
 			public void mouseEntered(MouseEvent event) {
-
 			}
 
 			@Override
