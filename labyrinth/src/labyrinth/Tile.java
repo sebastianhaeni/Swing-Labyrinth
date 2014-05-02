@@ -7,8 +7,6 @@ public class Tile {
 		Wall, Empty
 	}
 
-	private static final boolean ALLOW_DIAGONAL = false;
-
 	private ETileType _type;
 	private Coordinate _coordinate;
 	private boolean _isStart;
@@ -137,27 +135,6 @@ public class Tile {
 			return true;
 		}
 		if (tile.getCoordinate().getX() == getCoordinate().getX()
-				&& tile.getCoordinate().getY() == getCoordinate().getY() + 1) {
-			return true;
-		}
-
-		if (!ALLOW_DIAGONAL) {
-			return false;
-		}
-
-		if (tile.getCoordinate().getX() == getCoordinate().getX() - 1
-				&& tile.getCoordinate().getY() == getCoordinate().getY() - 1) {
-			return true;
-		}
-		if (tile.getCoordinate().getX() == getCoordinate().getX() + 1
-				&& tile.getCoordinate().getY() == getCoordinate().getY() + 1) {
-			return true;
-		}
-		if (tile.getCoordinate().getX() == getCoordinate().getX() + 1
-				&& tile.getCoordinate().getY() == getCoordinate().getY() - 1) {
-			return true;
-		}
-		if (tile.getCoordinate().getX() == getCoordinate().getX() - 1
 				&& tile.getCoordinate().getY() == getCoordinate().getY() + 1) {
 			return true;
 		}
