@@ -45,6 +45,11 @@ class CarveThread extends Thread {
 
 	private boolean carve() {
 		_model._dirty = true;
+		try {
+			Thread.sleep(1);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 
 		ArrayList<Tile> neighbors = _stack.lastElement().getNeighbors(
 				_model.getTiles(), Tile.ETileType.Wall);
