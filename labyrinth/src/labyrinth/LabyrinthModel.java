@@ -26,6 +26,9 @@ public class LabyrinthModel {
 	}
 
 	public void generateLabyrinth(int width, int height) {
+		if (_generating) {
+			return;
+		}
 		_width = width;
 		_height = height;
 		_tiles.clear();
