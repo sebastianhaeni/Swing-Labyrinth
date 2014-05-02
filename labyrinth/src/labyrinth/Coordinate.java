@@ -24,4 +24,9 @@ public class Coordinate {
 	public boolean equals(Coordinate other) {
 		return getX() == other.getX() && getY() == other.getY();
 	}
+
+	@Override
+	public String toString() {
+		return String.format("x: %d y: %d", _x, _y);
+	}
 }

@@ -10,41 +10,48 @@ import labyrinth.Tile.ETileType;
 
 public class LabyrinthModel {
 
-	private ArrayList<Tile> _tiles = new ArrayList<>();
+	ArrayList<Tile> _tiles = new ArrayList<>();
 	private int _width;
 	private int _height;
+	boolean _generating = false;
+	private Random _random = new Random();
+	boolean _dirty;
 
 	public LabyrinthModel(String mazeFile) {
 		if (mazeFile == null) {
-			generateLabyrinth(20, 20);
+			generateLabyrinth(60, 60);
 			return;
 		}
 		parse(mazeFile);
 	}
 
-	private void generateLabyrinth(int width, int height) {
-		Random r = new Random();
+	public void generateLabyrinth(int width, int height) {
+		_width = width;
+		_height = height;
+		_tiles.clear();
+
+		// generating mass
 		for (int x = 0; x < width; x++) {
 			for (int y = 0; y < height; y++) {
-				ETileType type = ETileType.Wall;
-
-				switch (r.nextInt(10)) {
-				case 0:
-				case 1:
-				case 2:
-				case 3:
-				case 4:
-					type = ETileType.Empty;
-					break;
-				}
-
-				Tile tile = new Tile(new Coordinate(x, y), type);
+				Tile tile = new Tile(new Coordinate(x, y), ETileType.Wall);
 				_tiles.add(tile);
 			}
 		}
 
-		_width = width;
-		_height = height;
+		// carving out paths
+		Tile start = _tiles.get(_random.nextInt(_tiles.size() - 1));
+		boolean notGood = true;
+		while (notGood) {
+			if (start.isExit(width, height)) {
+				start = _tiles.get(_random.nextInt(_tiles.size() - 1));
+				continue;
+			}
+			notGood = false;
+		}
+		Thread thread = new CarveThread(this, start);
+		_generating = true;
+		thread.start();
+
 	}
 
 	private void parse(String mazeFile) {
@@ -112,7 +119,7 @@ public class LabyrinthModel {
 		ArrayList<Tile> neighbors = start.getNeighbors(getTiles(),
 				Tile.ETileType.Empty);
 
-		if (counter > 1000) {
+		if (counter > _width * _height) {
 			System.out.println("Way not found");
 			return false;
 		}
@@ -137,6 +144,18 @@ public class LabyrinthModel {
 		}
 
 		return false;
+	}
+
+	public boolean isGenerating() {
+		return _generating;
+	}
+
+	public boolean isDirty() {
+		return _dirty;
+	}
+
+	public void clean() {
+		_dirty = false;
 	}
 
 }

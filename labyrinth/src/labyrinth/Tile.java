@@ -7,13 +7,15 @@ public class Tile {
 		Wall, Empty
 	}
 
-	private static final boolean ALLOW_DIAGONAL = true;
+	private static final boolean ALLOW_DIAGONAL = false;
 
 	private ETileType _type;
 	private Coordinate _coordinate;
 	private boolean _isStart;
 	private boolean _isPath;
 	private int _number;
+
+	public boolean uncarvable;
 
 	public Tile(char c, Coordinate coordinate) {
 		_coordinate = coordinate;
@@ -63,6 +65,26 @@ public class Tile {
 
 	public Tile getNeighborBottom(ArrayList<Tile> tiles) {
 		return searchTile(new Coordinate(getCoordinate().getX(),
+				getCoordinate().getY() + 1), tiles);
+	}
+
+	public Tile getNeighborTopLeft(ArrayList<Tile> tiles) {
+		return searchTile(new Coordinate(getCoordinate().getX() - 1,
+				getCoordinate().getY() - 1), tiles);
+	}
+
+	public Tile getNeighborTopRight(ArrayList<Tile> tiles) {
+		return searchTile(new Coordinate(getCoordinate().getX() + 1,
+				getCoordinate().getY() - 1), tiles);
+	}
+
+	public Tile getNeighborBottomRight(ArrayList<Tile> tiles) {
+		return searchTile(new Coordinate(getCoordinate().getX() + 1,
+				getCoordinate().getY() + 1), tiles);
+	}
+
+	public Tile getNeighborBottomLeft(ArrayList<Tile> tiles) {
+		return searchTile(new Coordinate(getCoordinate().getX() - 1,
 				getCoordinate().getY() + 1), tiles);
 	}
 
@@ -178,4 +200,9 @@ public class Tile {
 	public int getNumber() {
 		return _number;
 	}
+
+	public void setType(ETileType type) {
+		_type = type;
+	}
+
 }
