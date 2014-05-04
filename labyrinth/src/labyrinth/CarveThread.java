@@ -2,31 +2,57 @@ package labyrinth;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Random;
 import java.util.Stack;
 
 import labyrinth.Tile.ETileType;
 
 class CarveThread extends Thread {
 
-	private Tile _start;
 	private Stack<Tile> _stack = new Stack<Tile>();
 	private LabyrinthModel _model;
 	private boolean _makeJunction = false;
+	private Random _random = new Random();
 
-	public CarveThread(LabyrinthModel labyrinthModel, Tile start) {
+	public CarveThread(LabyrinthModel labyrinthModel) {
 		_model = labyrinthModel;
-		_start = start;
-		_start.setType(ETileType.Empty);
 	}
 
 	@Override
 	public void run() {
-		_stack.add(_start);
+		createMass();
+
+		_stack.add(getStarterTile());
 		carve();
 
 		pokeExit();
 
 		_model._generating = false;
+	}
+
+	private Tile getStarterTile() {
+		Tile start = _model.getTiles().get(
+				_random.nextInt(_model.getTiles().size() - 1));
+		boolean notGood = true;
+		while (notGood) {
+			if (start.isExit(_model.getWidth(), _model.getHeight())) {
+				start = _model.getTiles().get(
+						_random.nextInt(_model.getTiles().size() - 1));
+				continue;
+			}
+			notGood = false;
+		}
+		start.setType(ETileType.Empty);
+		return start;
+	}
+
+	private void createMass() {
+		for (int x = 0; x < _model.getWidth(); x++) {
+			for (int y = 0; y < _model.getHeight(); y++) {
+				Tile tile = new Tile(new Coordinate(x, y), ETileType.Wall);
+				_model.getTiles().add(tile);
+			}
+		}
 	}
 
 	private void pokeExit() {
@@ -46,7 +72,7 @@ class CarveThread extends Thread {
 	private boolean carve() {
 		_model._dirty = true;
 		try {
-			Thread.sleep(1);
+			Thread.sleep(10);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
