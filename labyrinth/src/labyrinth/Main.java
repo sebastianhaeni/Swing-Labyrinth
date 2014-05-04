@@ -68,7 +68,6 @@ public class Main extends JFrame {
 			}
 		});
 		_labyrinthPainter.addMouseListener(new MouseListener() {
-
 			@Override
 			public void mouseReleased(MouseEvent event) {
 				_labyrinthPainter.toggleTile(event.getPoint());

@@ -69,8 +69,8 @@ public class LabyrinthModel {
 			while ((sCurrentLine = br.readLine()) != null) {
 
 				for (int col = 0; col < sCurrentLine.length(); col++) {
-					_tiles.add(new Tile(sCurrentLine.charAt(col),
-							new Coordinate(col, row)));
+					_tiles.add(new Tile(new Coordinate(col, row),
+							sCurrentLine.charAt(col)));
 
 					if (col + 1 > _width) {
 						_width = col + 1;
@@ -114,18 +114,20 @@ public class LabyrinthModel {
 
 		ArrayList<Tile> visited = new ArrayList<>();
 		visited.add(start);
-		return findPathFrom(start, visited, 0);
+
+		try {
+			return findPathFrom(start, visited, 1);
+		} catch (StackOverflowError ex) {
+			System.out.println("Labyrinth to big to solve recursively!");
+		}
+		return false;
 	}
 
 	private boolean findPathFrom(Tile start, ArrayList<Tile> visited,
-			int counter) {
+			int counter) throws StackOverflowError {
+
 		ArrayList<Tile> neighbors = start.getNeighbors(getTiles(),
 				Tile.ETileType.Empty);
-
-		if (counter > _width * _height) {
-			System.out.println("Way not found");
-			return false;
-		}
 
 		for (Tile neighbor : neighbors) {
 			if (visited.contains(neighbor)) {
@@ -133,7 +135,7 @@ public class LabyrinthModel {
 			}
 
 			neighbor.setIsPath();
-			neighbor.setNumber(counter);
+			neighbor.setHeuristic(counter);
 			visited.add(neighbor);
 
 			if (neighbor.isExit(getWidth(), getHeight())) {
@@ -143,6 +145,7 @@ public class LabyrinthModel {
 			if (findPathFrom(neighbor, visited, counter + 1)) {
 				return true;
 			}
+
 			neighbor.clearPath();
 		}
 

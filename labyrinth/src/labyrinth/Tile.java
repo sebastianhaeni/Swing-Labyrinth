@@ -11,11 +11,11 @@ public class Tile {
 	private Coordinate _coordinate;
 	private boolean _isStart;
 	private boolean _isPath;
-	private int _number;
+	private int _heuristic;
 
 	public boolean uncarvable;
 
-	public Tile(char c, Coordinate coordinate) {
+	public Tile(Coordinate coordinate, char c) {
 		_coordinate = coordinate;
 
 		switch (c) {
@@ -170,16 +170,16 @@ public class Tile {
 		_isPath = false;
 	}
 
-	public void setNumber(int number) {
-		_number = number;
-	}
-
-	public int getNumber() {
-		return _number;
+	public void setHeuristic(int number) {
+		_heuristic = number;
 	}
 
 	public void setType(ETileType type) {
 		_type = type;
+	}
+
+	public int getHeuristic() {
+		return _heuristic;
 	}
 
 }

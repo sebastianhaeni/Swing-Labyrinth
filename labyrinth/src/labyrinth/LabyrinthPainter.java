@@ -85,9 +85,9 @@ public class LabyrinthPainter extends JPanel {
 			g.setColor(Color.YELLOW);
 			g.fillOval(x, y, _tileSize, _tileSize);
 
-			// g.setColor(Color.BLACK);
-			// g.drawString(tile.getNumber() + "", x + (_tileSize / 2), y
-			// + (_tileSize / 2));
+			g.setColor(Color.BLACK);
+			g.drawString(tile.getHeuristic() + "", x + (_tileSize / 2), y
+					+ (_tileSize / 2));
 		}
 	}
 
@@ -113,13 +113,13 @@ public class LabyrinthPainter extends JPanel {
 
 		if (tile.getNeighborRight(_labyrinth.getTiles()).getType() == ETileType.Wall) {
 			int ax = x + (_tileSize / 2);
-			int ay = y + (_tileSize / 2)- (_borderWidth / 2);
+			int ay = y + (_tileSize / 2) - (_borderWidth / 2);
 			g.fillRect(ax, ay, _tileSize / 2, _borderWidth);
 		}
 
 		if (tile.getNeighborBottom(_labyrinth.getTiles()).getType() == ETileType.Wall) {
 			int ax = x + (_tileSize / 2) - (_borderWidth / 2);
-			int ay = y + (_tileSize / 2) ;
+			int ay = y + (_tileSize / 2);
 			g.fillRect(ax, ay, _borderWidth, _tileSize / 2);
 		}
 
