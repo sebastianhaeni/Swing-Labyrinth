@@ -1,10 +1,12 @@
 package labyrinth;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Random;
 
 import labyrinth.Tile.ETileType;
 
@@ -14,8 +16,10 @@ public class LabyrinthModel {
 	private int _width;
 	private int _height;
 	boolean _generating = false;
-	private Random _random = new Random();
+	
 	boolean _dirty;
+
+	private ArrayList<ArrayList<Tile>> _paths = new ArrayList<>();
 
 	public LabyrinthModel(String mazeFile) {
 		if (mazeFile == null) {
@@ -33,28 +37,9 @@ public class LabyrinthModel {
 		_height = height;
 		_tiles.clear();
 
-		// generating mass
-		for (int x = 0; x < width; x++) {
-			for (int y = 0; y < height; y++) {
-				Tile tile = new Tile(new Coordinate(x, y), ETileType.Wall);
-				_tiles.add(tile);
-			}
-		}
-
-		// carving out paths
-		Tile start = _tiles.get(_random.nextInt(_tiles.size() - 1));
-		boolean notGood = true;
-		while (notGood) {
-			if (start.isExit(width, height)) {
-				start = _tiles.get(_random.nextInt(_tiles.size() - 1));
-				continue;
-			}
-			notGood = false;
-		}
-		Thread thread = new CarveThread(this, start);
+		Thread thread = new CarveThread(this);
 		_generating = true;
 		thread.start();
-
 	}
 
 	private void parse(String mazeFile) {
@@ -69,8 +54,8 @@ public class LabyrinthModel {
 			while ((sCurrentLine = br.readLine()) != null) {
 
 				for (int col = 0; col < sCurrentLine.length(); col++) {
-					_tiles.add(new Tile(new Coordinate(col, row),
-							sCurrentLine.charAt(col)));
+					_tiles.add(new Tile(new Coordinate(col, row), sCurrentLine
+							.charAt(col)));
 
 					if (col + 1 > _width) {
 						_width = col + 1;
@@ -108,6 +93,8 @@ public class LabyrinthModel {
 	}
 
 	public boolean findPathFrom(Tile start) {
+		_paths.clear();
+
 		if (start.isExit(getWidth(), getHeight())) {
 			return true;
 		}
@@ -116,17 +103,42 @@ public class LabyrinthModel {
 		visited.add(start);
 
 		try {
-			return findPathFrom(start, visited, 1);
+			findPathFrom(start, visited);
 		} catch (StackOverflowError ex) {
 			System.out.println("Labyrinth to big to solve recursively!");
 		}
+
+		if (_paths.size() > 0) {
+			// finding shortest path
+			ArrayList<Tile> shortest = null;
+
+			for (ArrayList<Tile> path : _paths) {
+
+				if (shortest == null) {
+					shortest = path;
+					continue;
+				}
+
+				if (shortest.size() > path.size()) {
+					shortest = path;
+				}
+
+			}
+
+			for (Tile tile : shortest) {
+				tile.setIsPath();
+			}
+
+			return true;
+		}
+
 		return false;
 	}
 
-	private boolean findPathFrom(Tile start, ArrayList<Tile> visited,
-			int counter) throws StackOverflowError {
+	private boolean findPathFrom(Tile tile, ArrayList<Tile> visited)
+			throws StackOverflowError {
 
-		ArrayList<Tile> neighbors = start.getNeighbors(getTiles(),
+		ArrayList<Tile> neighbors = tile.getNeighbors(getTiles(),
 				Tile.ETileType.Empty);
 
 		for (Tile neighbor : neighbors) {
@@ -134,19 +146,16 @@ public class LabyrinthModel {
 				continue;
 			}
 
-			neighbor.setIsPath();
-			neighbor.setHeuristic(counter);
 			visited.add(neighbor);
 
 			if (neighbor.isExit(getWidth(), getHeight())) {
+				_paths.add(visited);
 				return true;
 			}
 
-			if (findPathFrom(neighbor, visited, counter + 1)) {
-				return true;
+			if (!findPathFrom(neighbor, new ArrayList<>(visited))) {
+				visited.remove(neighbor);
 			}
-
-			neighbor.clearPath();
 		}
 
 		return false;
@@ -162,6 +171,40 @@ public class LabyrinthModel {
 
 	public void clean() {
 		_dirty = false;
+	}
+
+	public void save(File selectedFile) {
+		BufferedWriter writer = null;
+		try {
+			writer = new BufferedWriter(new FileWriter(selectedFile));
+
+			int row = 0;
+			while (row < _height) {
+				int col = 0;
+				while (col < _width) {
+					for (Tile tile : _tiles) {
+						if (tile.getCoordinate().getY() == row
+								&& tile.getCoordinate().getX() == col) {
+							writer.write(tile.getType() == ETileType.Empty ? '.'
+									: '#');
+						}
+					}
+					col++;
+				}
+				row++;
+				writer.write(String.format("%n"));
+			}
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				writer.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
 	}
 
 }

@@ -11,7 +11,6 @@ public class Tile {
 	private Coordinate _coordinate;
 	private boolean _isStart;
 	private boolean _isPath;
-	private int _heuristic;
 
 	public boolean uncarvable;
 
@@ -166,20 +165,12 @@ public class Tile {
 		return neighbors;
 	}
 
-	public void clearPath() {
+	public void clearIsPath() {
 		_isPath = false;
-	}
-
-	public void setHeuristic(int number) {
-		_heuristic = number;
 	}
 
 	public void setType(ETileType type) {
 		_type = type;
-	}
-
-	public int getHeuristic() {
-		return _heuristic;
 	}
 
 }

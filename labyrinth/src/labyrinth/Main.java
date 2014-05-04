@@ -3,6 +3,7 @@ package labyrinth;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -11,9 +12,13 @@ import java.util.TimerTask;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
-import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.KeyStroke;
 import javax.swing.border.Border;
 
 public class Main extends JFrame {
@@ -32,6 +37,8 @@ public class Main extends JFrame {
 		setExtendedState(getExtendedState() | JFrame.MAXIMIZED_BOTH);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setLocationRelativeTo(null);
+
+		_labyrinthModel = new LabyrinthModel(mazeFile);
 		createGui(mazeFile);
 
 		setVisible(true);
@@ -46,12 +53,12 @@ public class Main extends JFrame {
 			}
 		};
 		Timer timer = new Timer();
-		timer.scheduleAtFixedRate(task, 0, 100);
+		timer.scheduleAtFixedRate(task, 0, 50);
 
 	}
 
 	private void createGui(String mazeFile) {
-		_labyrinthModel = new LabyrinthModel(mazeFile);
+		createMenuBar();
 		final JPanel mainPanel = new JPanel();
 		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.X_AXIS));
 
@@ -92,20 +99,76 @@ public class Main extends JFrame {
 
 		mainPanel.add(_labyrinthPainter);
 
-		JButton btnRegenerate = new JButton("Regenerate");
-		btnRegenerate.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				_labyrinthModel.generateLabyrinth(60, 60);
-				repaint();
-			}
-		});
-		mainPanel.add(btnRegenerate);
-
 		Border border = BorderFactory.createEmptyBorder(5, 5, 5, 5);
 		mainPanel.setBorder(border);
 
 		add(mainPanel);
 	}
 
+	private void createMenuBar() {
+		JMenuBar bar = new JMenuBar();
+
+		JMenu menu = new JMenu("File");
+		menu.setMnemonic(KeyEvent.VK_F);
+
+		JMenuItem open = new JMenuItem("Open");
+		open.setMnemonic(KeyEvent.VK_O);
+		open.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O,
+				KeyEvent.CTRL_MASK));
+		open.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				chooseMazeFile();
+			}
+		});
+
+		JMenuItem save = new JMenuItem("Save");
+		save.setMnemonic(KeyEvent.VK_S);
+		save.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,
+				KeyEvent.CTRL_MASK));
+		save.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				saveMazeFile();
+			}
+		});
+
+		menu.add(open);
+		menu.add(save);
+		bar.add(menu);
+
+		menu = new JMenu("Actions");
+		JMenuItem generate = new JMenuItem("Generate random labyrinth");
+		generate.setMnemonic(KeyEvent.VK_G);
+		generate.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_G,
+				KeyEvent.CTRL_MASK));
+		generate.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				_labyrinthModel.generateLabyrinth(50, 50);
+			}
+		});
+		menu.add(generate);
+		bar.add(menu);
+
+		setJMenuBar(bar);
+	}
+
+	private void chooseMazeFile() {
+		JFileChooser chooser = new JFileChooser();
+
+		if (chooser.showDialog(this, "Open maze") == JFileChooser.APPROVE_OPTION) {
+			_labyrinthModel = new LabyrinthModel(chooser.getSelectedFile()
+					.getAbsolutePath());
+			_labyrinthPainter.setModel(_labyrinthModel);
+		}
+	}
+
+	private void saveMazeFile() {
+		JFileChooser chooser = new JFileChooser();
+
+		if (chooser.showDialog(this, "Save maze") == JFileChooser.APPROVE_OPTION) {
+			_labyrinthModel.save(chooser.getSelectedFile());
+		}
+	}
 }

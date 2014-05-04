@@ -84,10 +84,6 @@ public class LabyrinthPainter extends JPanel {
 		} else if (tile.isPath()) {
 			g.setColor(Color.YELLOW);
 			g.fillOval(x, y, _tileSize, _tileSize);
-
-			g.setColor(Color.BLACK);
-			g.drawString(tile.getHeuristic() + "", x + (_tileSize / 2), y
-					+ (_tileSize / 2));
 		}
 	}
 
@@ -168,7 +164,7 @@ public class LabyrinthPainter extends JPanel {
 				continue;
 			}
 
-			tile.clearPath();
+			tile.clearIsPath();
 
 			int x = tile.getCoordinate().getX() * _tileSize;
 			int y = tile.getCoordinate().getY() * _tileSize;
@@ -207,6 +203,10 @@ public class LabyrinthPainter extends JPanel {
 			}
 		}
 		repaint();
+	}
+
+	public void setModel(LabyrinthModel model) {
+		_labyrinth = model;
 	}
 
 }
