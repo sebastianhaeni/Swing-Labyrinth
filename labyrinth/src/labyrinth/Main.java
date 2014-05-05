@@ -1,5 +1,6 @@
 package labyrinth;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -11,16 +12,29 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.border.Border;
 
+/**
+ * 
+ * @author Sebastian Häni <haeni.sebastian@gmail.com>
+ * 
+ */
 public class Main extends JFrame {
 
 	private static final long serialVersionUID = -8129013583057007422L;
@@ -30,6 +44,7 @@ public class Main extends JFrame {
 
 	private LabyrinthModel _labyrinthModel;
 	private LabyrinthPainter _labyrinthPainter;
+	private boolean _painting = false;
 
 	public Main(String mazeFile) {
 		setTitle("Labyrinth");
@@ -43,12 +58,15 @@ public class Main extends JFrame {
 
 		setVisible(true);
 
+		// Timer to repaint the labyrinth when another thread is changing it.
 		TimerTask task = new TimerTask() {
 			@Override
 			public void run() {
-				if (_labyrinthModel.isDirty()) {
-					_labyrinthModel.clean();
+				if (!_painting && _labyrinthModel.isDirty()) {
+					_painting = true;
+					_labyrinthModel.setDirty(false);
 					_labyrinthPainter.repaint();
+					_painting = false;
 				}
 			}
 		};
@@ -67,7 +85,7 @@ public class Main extends JFrame {
 		_labyrinthPainter.addMouseMotionListener(new MouseMotionListener() {
 			@Override
 			public void mouseMoved(MouseEvent event) {
-				_labyrinthPainter.start(event.getPoint());
+				_labyrinthPainter.searchPath(event.getPoint());
 			}
 
 			@Override
@@ -105,7 +123,12 @@ public class Main extends JFrame {
 		add(mainPanel);
 	}
 
+	/**
+	 * Yay, Spaghetti Code!
+	 */
 	private void createMenuBar() {
+		final JFrame frame = this;
+
 		JMenuBar bar = new JMenuBar();
 
 		JMenu menu = new JMenu("File");
@@ -137,15 +160,91 @@ public class Main extends JFrame {
 		menu.add(save);
 		bar.add(menu);
 
-		menu = new JMenu("Actions");
+		menu = new JMenu("Tools");
+
+		final JCheckBoxMenuItem showOutline = new JCheckBoxMenuItem(
+				"Show outline", true);
+		showOutline.setMnemonic(KeyEvent.VK_O);
+		showOutline.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_L,
+				KeyEvent.CTRL_MASK));
+		showOutline.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				_labyrinthPainter.setShowOutline(showOutline.isSelected());
+			}
+		});
+		menu.add(showOutline);
+
+		final JCheckBoxMenuItem fancyGraphics = new JCheckBoxMenuItem(
+				"Fancy Graphics", true);
+		fancyGraphics.setMnemonic(KeyEvent.VK_F);
+		fancyGraphics.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F,
+				KeyEvent.CTRL_MASK));
+		fancyGraphics.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				_labyrinthPainter.setFancyGraphics(fancyGraphics.isSelected());
+			}
+		});
+		menu.add(fancyGraphics);
+
+		final JDialog dialog = new JDialog(this, "Random labyrinth", true);
+		dialog.setResizable(false);
+		dialog.setSize(450, 80);
+
+		JPanel dialogPanel = new JPanel(); // Flow layout will center button.
+		Border border = BorderFactory.createEmptyBorder(15, 15, 15, 15);
+		dialogPanel.setBorder(border);
+		dialogPanel.setLayout(new BoxLayout(dialogPanel, BoxLayout.LINE_AXIS));
+
+		JLabel widthLabel = new JLabel("Width:", JLabel.RIGHT);
+		final JTextField widthTextfield = new JTextField("50");
+		JLabel heightLabel = new JLabel("Height:", JLabel.RIGHT);
+		final JTextField heightTextfield = new JTextField("50");
+		final JCheckBox checkbox = new JCheckBox("Show animation");
+
+		JButton btnRun = new JButton("Run");
+		btnRun.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ev) {
+				dialog.setVisible(false);
+				dialog.dispose();
+
+				_labyrinthModel.generateLabyrinth(
+						Integer.parseInt(widthTextfield.getText()),
+						Integer.parseInt(heightTextfield.getText()),
+						checkbox.isSelected());
+			}
+		});
+
+		dialogPanel.add(widthLabel, BorderLayout.EAST);
+		dialogPanel.add(Box.createRigidArea(new Dimension(5, 0)));
+		dialogPanel.add(widthTextfield, BorderLayout.WEST);
+		dialogPanel.add(Box.createRigidArea(new Dimension(15, 0)));
+		dialogPanel.add(heightLabel, BorderLayout.EAST);
+		dialogPanel.add(Box.createRigidArea(new Dimension(5, 0)));
+		dialogPanel.add(heightTextfield, BorderLayout.WEST);
+		dialogPanel.add(Box.createRigidArea(new Dimension(15, 0)));
+		dialogPanel.add(checkbox);
+		dialogPanel.add(Box.createRigidArea(new Dimension(15, 0)));
+		dialogPanel.add(btnRun);
+
+		dialog.getContentPane().add(dialogPanel);
+		dialog.setLocationRelativeTo(this);
+
 		JMenuItem generate = new JMenuItem("Generate random labyrinth");
 		generate.setMnemonic(KeyEvent.VK_G);
 		generate.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_G,
 				KeyEvent.CTRL_MASK));
+
 		generate.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				_labyrinthModel.generateLabyrinth(50, 50);
+				if (_labyrinthModel.isGenerating()) {
+					JOptionPane.showMessageDialog(frame,
+							"Wait for running generation to finish!");
+					return;
+				}
+				dialog.setVisible(true);
 			}
 		});
 		menu.add(generate);

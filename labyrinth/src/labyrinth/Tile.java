@@ -2,7 +2,13 @@ package labyrinth;
 
 import java.util.ArrayList;
 
+/**
+ * 
+ * @author Sebastian Häni <haeni.sebastian@gmail.com>
+ * 
+ */
 public class Tile {
+
 	public enum ETileType {
 		Wall, Empty
 	}
@@ -11,8 +17,6 @@ public class Tile {
 	private Coordinate _coordinate;
 	private boolean _isStart;
 	private boolean _isPath;
-
-	public boolean uncarvable;
 
 	public Tile(Coordinate coordinate, char c) {
 		_coordinate = coordinate;
@@ -25,6 +29,7 @@ public class Tile {
 			break;
 		case ' ':
 		case '.':
+		case '_':
 			_type = ETileType.Empty;
 			break;
 		default:
@@ -85,6 +90,13 @@ public class Tile {
 				getCoordinate().getY() + 1), tiles);
 	}
 
+	/**
+	 * Searches and returns the tile at the given coordinate.
+	 * 
+	 * @param coordinate
+	 * @param tiles
+	 * @return
+	 */
 	private Tile searchTile(Coordinate coordinate, ArrayList<Tile> tiles) {
 		if (!coordinate.isValid()) {
 			return new Tile(coordinate, ETileType.Empty);
@@ -99,12 +111,16 @@ public class Tile {
 		return new Tile(coordinate, ETileType.Empty);
 	}
 
-	public void setIsStart() {
-		_isStart = true;
+	public void setType(ETileType type) {
+		_type = type;
 	}
 
-	public void clearStart() {
-		_isStart = false;
+	public void setStart(boolean isStart) {
+		_isStart = isStart;
+	}
+
+	public void setPath(boolean isPath) {
+		_isPath = isPath;
 	}
 
 	public boolean isStart() {
@@ -115,10 +131,11 @@ public class Tile {
 		return _isPath;
 	}
 
-	public void setIsPath() {
-		_isPath = true;
-	}
-
+	/**
+	 * Determines if the given tile is a neighbor.
+	 * @param tile
+	 * @return
+	 */
 	public boolean isNeighbor(Tile tile) {
 
 		if (tile.getCoordinate().getX() == getCoordinate().getX() - 1
@@ -141,12 +158,24 @@ public class Tile {
 		return false;
 	}
 
+	/**
+	 * Determines if this tile is an exit.
+	 * @param width
+	 * @param height
+	 * @return
+	 */
 	public boolean isExit(int width, int height) {
 		int x = getCoordinate().getX();
 		int y = getCoordinate().getY();
 		return x == 0 || x == width - 1 || y == 0 || y == height - 1;
 	}
 
+	/**
+	 * Creates a list with all neighbors of a given type.
+	 * @param tiles
+	 * @param type
+	 * @return
+	 */
 	public ArrayList<Tile> getNeighbors(ArrayList<Tile> tiles, ETileType type) {
 		ArrayList<Tile> neighbors = new ArrayList<>();
 
@@ -163,14 +192,6 @@ public class Tile {
 		}
 
 		return neighbors;
-	}
-
-	public void clearIsPath() {
-		_isPath = false;
-	}
-
-	public void setType(ETileType type) {
-		_type = type;
 	}
 
 }
