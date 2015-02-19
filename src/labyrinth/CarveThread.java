@@ -30,7 +30,7 @@ class CarveThread extends Thread {
 	 */
 	public CarveThread(LabyrinthModel labyrinthModel, boolean slow) {
 		_model = labyrinthModel;
-		_slow = slow;x
+		_slow = slow;
 	}
 
 	@Override

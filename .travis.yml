@@ -1,6 +1,1 @@
 language: java
-
-notifications:
-  email:
-    - haeni.sebastian@gmail.com
-    - sebastian.haeni@ruag.com
